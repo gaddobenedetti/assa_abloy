@@ -8,7 +8,7 @@ The mobile app is written in Dart, using the Flutter framework and designed to b
 
 No localization, state management or extensive themes/styles were developed. It is meant simply as a proof of concept.
 
-## Notes on Requirements Deliverables
+## Notes on Requirements and Deliverables
 
 * Lock configuration data is retrieved on app start from the provided API. If an error occurs, an error message is displayed.
 * The configuration data is persisted locally once retrieved, between sessions, as is the configuration for each lock.
