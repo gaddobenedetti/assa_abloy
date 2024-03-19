@@ -9,6 +9,10 @@ class Styles {
 
   static TextStyle errorText = baseText(size: 16.0, color: Colors.red);
 
+  static TextStyle hintText = baseText(color: Colors.grey);
+
+  static TextStyle saveButtonTextColor = baseText(color: Colors.white);
+
   static TextStyle baseText({
     double size = 14.0,
     Color? color = const Color(0xFF000000),
@@ -17,6 +21,9 @@ class Styles {
     return TextStyle(
         fontSize: size, color: color, fontWeight: weight, fontFamily: "Roboto");
   }
+
+  static ButtonStyle saveButtonColor = const ButtonStyle(
+      backgroundColor: MaterialStatePropertyAll<Color>(Colors.cyan));
 
   static Color? lockColor = Colors.cyan[200];
 

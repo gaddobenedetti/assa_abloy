@@ -34,22 +34,33 @@ class _ConfigListState extends State<ConfigList> {
   LockConfig? config;
   String search = "";
   List<bool> expanded = [false, false];
-  late List<LockStore> locks = [LockStore(), LockStore()];
+  List<LockStore> locks = [LockStore(), LockStore()];
 
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   static const storeConfig = "storeConfig";
+  static const primaryLockConfig = "primaryLockConfig";
+  static const secondaryLockConfig = "secondaryLockConfig";
 
   Future<List<Widget>> _getConfigs() async {
     final SharedPreferences prefs = await _prefs;
-    String? raw = prefs.getString(storeConfig);
-    if (raw != null) {
-      config = LockConfig.fromJson(json.decode(raw));
+    String? rawConfig = prefs.getString(storeConfig);
+    if (rawConfig != null) {
+      config = LockConfig.fromJson(json.decode(rawConfig));
     }
 
     if (config == null) {
       final repo = Repo();
       config = await repo.getLockConfigs();
       prefs.setString(storeConfig, json.encode(config));
+    }
+
+    String? rawLock = prefs.getString(primaryLockConfig);
+    if (rawLock != null) {
+      locks[0] = LockStore.fromJson(json.decode(rawLock));
+      rawLock = prefs.getString(secondaryLockConfig);
+      if (rawLock != null) {
+        locks[1] = LockStore.fromJson(json.decode(rawLock));
+      }
     }
 
     if (locks[0].lockVoltage == null) {
@@ -99,8 +110,48 @@ class _ConfigListState extends State<ConfigList> {
     return listItems;
   }
 
-  bool _searchMatch(String label) =>
-      search.isEmpty || label.toLowerCase().contains(search.toLowerCase());
+  bool _searchMatch(String label) {
+    bool isMinLength = search.length >= 3;
+
+    bool nameMatch = label.toLowerCase().contains(search.toLowerCase());
+
+    bool valueMatch = false;
+    for (int i = 0; i < 2; i++) {
+      switch (label) {
+        case Strings.lockVoltage:
+          if (locks[i].lockVoltage.toString().contains(search)) {
+            valueMatch = true;
+          }
+          break;
+        case Strings.lockType:
+          if (locks[i].lockType.toString().contains(search)) {
+            valueMatch = true;
+          }
+          break;
+        case Strings.lockKick:
+          if (locks[i].lockKick.toString().contains(search)) {
+            valueMatch = true;
+          }
+          break;
+        case Strings.lockRelease:
+          if (locks[i].lockRelease.toString().contains(search)) {
+            valueMatch = true;
+          }
+          break;
+        case Strings.lockReleaseTime:
+          if (locks[i].lockReleaseTime.toString().contains(search)) {
+            valueMatch = true;
+          }
+          break;
+        case Strings.lockAngle:
+          if (locks[i].lockAngle.toString().contains(search)) {
+            valueMatch = true;
+          }
+      }
+    }
+
+    return isMinLength || nameMatch || valueMatch;
+  }
 
   Widget _setListItem(String label, Config c, String value0, String value1,
       [String unit = ""]) {
@@ -138,7 +189,9 @@ class _ConfigListState extends State<ConfigList> {
                     break;
                 }
               }
-              setState(() {});
+              setState(() {
+                _storeLockData();
+              });
             }
           });
         },
@@ -171,9 +224,17 @@ class _ConfigListState extends State<ConfigList> {
     }
   }
 
+  Future<void> _storeLockData() async {
+    final SharedPreferences prefs = await _prefs;
+    prefs.setString(primaryLockConfig, json.encode(locks[0]));
+    prefs.setString(secondaryLockConfig, json.encode(locks[1]));
+  }
+
   Future<void> _reset() async {
     final SharedPreferences prefs = await _prefs;
     prefs.remove(storeConfig);
+    prefs.remove(primaryLockConfig);
+    prefs.remove(secondaryLockConfig);
     setState(() {
       config = null;
       search = "";
@@ -186,6 +247,7 @@ class _ConfigListState extends State<ConfigList> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Styles.backgroundColor,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: Colors.cyan,
           title: Text(Strings.mainTitle, style: Styles.appBarLabel),
@@ -201,6 +263,10 @@ class _ConfigListState extends State<ConfigList> {
                   builder: (BuildContext context, SearchController controller) {
                 return SearchBar(
                   controller: controller,
+                  hintStyle: MaterialStateProperty.resolveWith((states) {
+                    return Styles.hintText;
+                  }),
+                  hintText: Strings.search_hint,
                   padding: const MaterialStatePropertyAll<EdgeInsets>(
                       EdgeInsets.symmetric(horizontal: 16.0)),
                   onChanged: (_) {
@@ -209,6 +275,16 @@ class _ConfigListState extends State<ConfigList> {
                     });
                   },
                   leading: const Icon(Icons.search),
+                  trailing: [
+                    IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            controller.clear();
+                            search = "";
+                          });
+                        })
+                  ],
                 );
               }, suggestionsBuilder:
                       (BuildContext context, SearchController controller) {

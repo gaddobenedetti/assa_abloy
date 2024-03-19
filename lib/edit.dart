@@ -1,5 +1,7 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:flutter/widgets.dart';
+
 import 'api_client.dart';
 import 'package:flutter/material.dart';
 import 'strings.dart';
@@ -93,6 +95,7 @@ class _ConfigEditState extends State<ConfigEdit> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Styles.backgroundColor,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: Colors.cyan,
           title: Text(Strings.editTitle, style: Styles.appBarLabel),
@@ -112,8 +115,7 @@ class _ConfigEditState extends State<ConfigEdit> {
                 ],
               ),
             ),
-            ListView(
-              shrinkWrap: true,
+            Column(
               children: [_setEditPanel(0), _setEditPanel(1)],
             ),
             Padding(
@@ -125,8 +127,12 @@ class _ConfigEditState extends State<ConfigEdit> {
                         onPressed: () => Navigator.pop(context),
                         child: const Text(Strings.cancel)),
                     ElevatedButton(
+                        style: Styles.saveButtonColor,
                         onPressed: () => Navigator.pop(context, _currentValues),
-                        child: const Text(Strings.save)),
+                        child: Text(
+                          Strings.save,
+                          style: Styles.saveButtonTextColor,
+                        )),
                   ],
                 ))
           ],

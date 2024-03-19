@@ -10,6 +10,7 @@ class Strings {
   static const primary = "Primary";
   static const secondary = "Secondary";
   static const error_prompt = "An error occured: ";
+  static const search_hint = "Search for lock parameter...";
   static const config_description =
       "Description of the configuration to be edited goes here.";
   static const default_label = "Default value: ";
